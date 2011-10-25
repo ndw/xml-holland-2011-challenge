@@ -1,0 +1,27 @@
+.unknown  { color: red; }
+.hi-i     { font-style: italic; }
+.hi-sc    { font-variant: small-caps; }
+.hi-b     { font-weight: bold; }
+.hi-spat  { letter-spacing: 2px; }
+.footnote { text-decoration: none; }
+.pb       { font-size: 8pt;
+            color: #AAAAAA;
+          }
+span.pb   { display: block;
+            padding-top: 1em;
+            padding-bottom: 1em;
+          }
+.poem     { padding-left: 10%; }
+p.tight   { margin-bottom: 0; padding-bottom: 0; }
+p.indent  { text-indent: 2em; margin-top: 0; padding-top: 0; }
+
+div.footnotes {
+    padding-left: 1em;
+    padding-right: 1em;
+    margin-bottom: 1em;
+    margin-top: 1em;
+    border: solid #ACACAC 1pt;
+    width: 80%;
+    margin-left: 15%;
+    border-radius: 15px;
+}

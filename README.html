@@ -1,0 +1,144 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>README</title>
+</head>
+<body>
+<h1>README</h1>
+<p>The files in this archive constitute my entry into the <a href="http://xmlholland.nl/codechallenge">XML
+Holland Code Challenge</a>.</p>
+
+<h2>Contents</h2>
+
+<dl>
+<dt>Millioenenstudien</dt>
+<dd>A copy of the TEI source materials provided to me.</dd>
+<dt>ancillary</dt>
+<dd>Ancillary files. In practice, only <code>doc.css</code> is used.</dd>
+<dt>tei2epub.xpl</dt>
+<dd>The XProc driver for this project; it uses only standard XProc steps and should run
+with any conformant implementation.</dd>
+<dt>normalize.xsl</dt>
+<dd>A stylesheet for normalizing the TEI text.</dd>
+<dt>tei2cover.xsl</dt>
+<dd>A stylesheet for producing the title page.</dd>
+<dt>tei2html.xsl</dt>
+<dd>A stylesheet for converting the <cite>Millioenenstudien</cite> TEI sources to HTML.</dd>
+<dt>tei2ncx.xsl</dt>
+<dd>A stylesheet for producing the ePUB NCX file.</dd>
+<dt>tei2opf.xsl</dt>
+<dd>A stylesheet for producing the ePUB OPF file.</dd>
+<dt>tei2endnotes.xsl</dt>
+<dd>Makes the end notes document.</dd>
+<dt>Makefile</dt>
+<dd>A top-level driver for constructing the ePUB file.</dd>
+</dl>
+
+<h2>Prerequisites</h2>
+
+<p>The decision to use a Makefile is a conscious one. Every project
+needs some sort of top-level driver; Makefiles and <cite>ant</cite> build scripts are common
+choices. While it would be possible to express <em>everything</em> in the XProc pipeline,
+doing so would require extension steps that would make the pipeline less portable and consequently
+seemlingly less appropriate for an “open standards” solution.</p>
+
+<p>It would also be possible to entirely eliminate the Makefile by
+simply listing the commands that must be run in order to produce the ePUB
+file, but it seems silly to impose such an inconvenience.</p>
+
+<p>In order to build the ePUB file, you must have an XProc processor and some version of
+the <a href="http://code.google.com/p/epubcheck/">EpubCheck</a> tool. These dependencies
+are highlighted as variables at the top of the Makefile.</p>
+
+<h2>Strategy</h2>
+
+<p>An ePUB file consists of three significant artifacts: a collection of HTML documents which
+form the content of the book, NCX and OPF documents that are metadata descriptions of the
+content, and any other ancillary files (images, CSS stylesheets, etc.) used in the book.</p>
+
+<p>In this submission, <cite>tei2html.xsl</cite> converts TEI to HTML to construct the
+colleciton of HTML documents; <cite>tei2ncx.xsl</cite> and <cite>tei2opf.xsl</cite> construct
+the metadata dscriptions, <cite>tei2cover.xsl</cite> produces a cover/titlepage;
+<cite>tei2endnotes.xsl</cite> produces end notes, if they're used; and the
+ancillary files are simply copied into place.</p>
+
+<p>The HTML transformations included in this submission handle all of the markup present in
+the <cite>Millioenenstudien</cite> but are nowhere near complete or even broadly useful
+for general TEI conversions. Where practical, the stylistic conventions in the text
+(italics, bold, letter-spacing) are pushed down to the CSS level so that they're easier
+to modify for presentation. The same is true of the page breaks which are displayed by
+default but could easily be suppressed with CSS.</p>
+
+<p>Absent a detailed spec for the markup, I've taken educated guesses in many cases.
+For example, I assume that <code>rend="i"</code> signals italics and
+<code>rend="bq"</code> signals a block quote, etc.</p>
+
+<p>Footnotes pose the most significant design challenge. I
+experimented with three options: notes inline, floating to the right;
+notes inline, below the paragraph that contains the note; and end
+notes.</p>
+
+<p>When the notes were “floated right”, getting the note text properly
+aligned (vertically) with the note reference seemed impractical. Before long, I concluded
+that it was just not aesthetically pleasing.</p>
+
+<p>Putting the notes inline, below the paragraph in which they occur isn't too bad.
+It has the advantage the the text is near the reference. It has two obvious disadvantages: the
+note text is somewhat “intrusive” in the document and in paginated readers, the note is occasionally
+on the next page. On the whole, I think the result is imperfect but aesthetically acceptable.</p>
+
+<p>The final approach, making all the notes appear at the end, linking the reference to the note
+and vice versa, removes the disadvantages of putting them inline, at the cost of moving them
+a long way from the reference. It's also unfortunate that in paged readers, the cross references
+take you only to the correct page, not to the point of reference as we're used to in scrolling
+media. Again, I think the result is imperfect but aesthetically acceptable.</p>
+
+<p>The solution submitted leaves the choice up to you. If you build with ENDNOTES=1 in the Makefile,
+you'll get end notes. If you build with ENDNOTES=0, you'll get inline notes.</p>
+
+<h3>Chunking</h3>
+
+<p>In designing an XProc+XSLT solution, there's another design decision to be made: do you chunk
+in XSLT, processing the entire TEI document in a single stylesheet that produces a sequence of
+chapter chunks, or do you chunk in XProc, using <code>p:for-each</code> to loop over the chapters?</p>
+
+<p>I chose the latter, mostly because it seemed to exercise XProc in a more interesting way.
+That decision ripples through in various ways. For example, the end notes are generated with a
+separate stylesheet. If I'd chosen the former approach, the end notes could have been generated
+by the stylesheet that processed the documents.</p>
+
+<h3>Normalization</h3>
+
+<p>One aspect of TEI to HTML conversion that has to be addressed is the discrepancy between
+what is allowed in TEI and what is allowed in HTML. In particular, while TEI allows block
+elements (such as figures, block quotations, and poems), HTML does not.</p>
+
+<p>I address this issue by preprocessing, or normalizing, the TEI
+sources. The <cite>normalize.xsl</cite> stylesheet adds ID values to
+elements that will need to be referenced later and lifts block
+elements out of paragraphs. This may or may not be an entirely
+TEI-valid intermediate form, but it is sufficient to guarantee that we
+get valid XHTML.</p>
+
+<h3>Text Cleanup</h3>
+
+<p>The TEI sources contain some odd markup, most obviously a large number of paragraphs
+that contain a single non-breaking space. These are the sorts of things one comes to expect
+from OCRed sources, but inspection of the
+<a href="http://www.dbnl.org/tekst/mult001mill01_01/">DBNL version</a> of the text allows
+us to make some inference about what is intended.</p>
+
+<p>In the transformation, I've attempted to render as many of these
+constructions as possible in aesthetically pleasing ways. For example,
+the empty paragraphs seem to coincide with the authors desire to have
+a mixture of block-style paragraphs separated by blank lines and
+indented-style paragraphs without blank lines. That's reflected in the
+ePUB through CSS rather than extra markup.</p>
+
+<h2>Conclusions</h2>
+
+<p>Using only the standard XProc and XSLT languages (with a little convenience scaffolding in
+a Makefile), this submission converts the supplied TEI sources to a valid ePUB book.</p>
+
+</body>
+</html>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="XML Holland Challenge" default="epubcheck">
+  <property name="epub" value="book.epub"/>
+  <property name="epubcheck" value="/usr/local/epubcheck-1.2/epubcheck-1.2.jar"/>
+  <property name="lib.dir" value="/projects/github/calabash/lib"/>
+  <property name="endnotes" value="0"/>
+
+  <path id="full.classpath">
+    <pathelement location="${lib.dir}/../calabash.jar"/>
+    <fileset dir="${lib.dir}">
+      <include name="*.jar"/>
+    </fileset>
+  </path>
+
+  <target name="epubcheck" depends="setup,epub">
+    <delete file="${epub}"/>
+    <zip destfile="${epub}" basedir="epub" excludes="mimetype"/>
+    <zip destfile="${epub}" basedir="epub" includes="mimetype" update="true"
+         compress="false" keepcompression="true" filesonly="true"/>
+    <java jar="${epubcheck}" fork="true">
+      <arg value="${epub}"/>
+    </java>
+  </target>
+
+  <target name="epub" depends="setup">
+    <delete>
+      <fileset dir="epub/doc" includes="*.html"/>
+    </delete>
+    <java fork="true" classname="com.xmlcalabash.drivers.Main">
+      <classpath>
+        <path refid="full.classpath"/>
+      </classpath>
+      <jvmarg value="-Xmx1024m"/>
+      <arg value="-isource=Millioenenstudien/mult001mill01_01.xml"/>
+      <arg value="tei2epub.xpl"/>
+      <arg value="endnotes=${endnotes}"/>
+    </java>
+  </target>
+
+  <target name="setup">
+    <mkdir dir="epub/doc"/>
+    <copy todir="epub/doc">
+      <fileset dir="Millioenenstudien" includes="*.gif"/>
+      <fileset dir="ancillary" includes="doc.css"/>
+    </copy>
+  </target>
+
+  <target name="clean">
+    <delete dir="epub"/>
+    <delete file="${epub}"/>
+  </target>
+
+</project>
